@@ -1,0 +1,517 @@
+
+#Autor: Franchi Uzcategui
+
+###1) Access the data set
+
+#a) Download the housing.csvdata set available in Canvas
+#b) Read the data set into R using a data frame named housing.
+
+head(housing)
+tail(housing)
+
+#c) Cast the ocean_proximity character variable to the factor class, and display the resulting levels.
+
+ocean_proximity_f <- as.factor(housing$ocean_proximity)
+head(ocean_proximity_f)
+head(housing)
+#Levels: <1H OCEAN INLAND ISLAND NEAR BAY NEAR OCEAN
+
+
+#c.1 Return the factor class to the dataframe
+housing <- housing
+housing['ocean_proximity_factor'] <- ocean_proximity_f
+head(housing)
+# longitude latitude housing_median_age total_rooms total_bedrooms population households median_income median_house_value ocean_proximity ocean_proximity_factor
+#1   -122.23    37.88                 41         880            129        322        126        8.3252             452600        NEAR BAY               NEAR BAY
+#2   -122.22    37.86                 21        7099           1106       2401       1138        8.3014             358500        NEAR BAY               NEAR BAY
+#3   -122.24    37.85                 52        1467            190        496        177        7.2574             352100        NEAR BAY               NEAR BAY
+#4   -122.25    37.85                 52        1274            235        558        219        5.6431             341300        NEAR BAY               NEAR BAY
+#5   -122.25    37.85                 52        1627            280        565        259        3.8462             342200        NEAR BAY               NEAR BAY
+#6   -122.25    37.85                 52         919            213        413        193        4.0368             269700        NEAR BAY               NEAR BAY
+
+#Adding underscored between words, because it'll cause issues for binary categorical variables. Ex. from <1H OCEAN to <1H_OCEAN
+#OPTION 1: 
+levels(housing$ocean_proximity_factor)[1] <- "less1H_OCEAN"
+levels(housing$ocean_proximity_factor)[4] <- "NEAR_BAY"
+levels(housing$ocean_proximity_factor)[5] <- "NEAR_OCEAN"
+
+#Checking changes
+head(housing$ocean_proximity_factor) 
+#[1] NEAR_BAY NEAR_BAY NEAR_BAY NEAR_BAY NEAR_BAY NEAR_BAY
+#Levels: <1H_OCEAN INLAND ISLAND NEAR_BAY NEAR_OCEAN
+
+#Now there are two ocean_proximity columns, we removed the character variable type: "ocean_proximity"
+names(housing)
+# [1] "longitude"              "latitude"               "housing_median_age"     "total_rooms"           
+#[5] "total_bedrooms"         "population"             "households"             "median_income"         
+#[9] "median_house_value"     "ocean_proximity"        "ocean_proximity_factor"
+
+#c.2 Removing character variable column ocean_proximity
+housing <- subset( housing, select = -ocean_proximity )
+
+#Checking the changes
+names(housing) #Confirming the change
+# [1] "longitude"              "latitude"               "housing_median_age"     "total_rooms"           
+#[5] "total_bedrooms"         "population"             "households"             "median_income"         
+#[9] "median_house_value"     "ocean_proximity_factor"
+
+###2) EDA and Data Visualization
+
+#a)Run the head() and tail() functions on the data frame to get a feel for the actual data values.
+head(housing)
+#  longitude latitude housing_median_age total_rooms total_bedrooms population households median_income
+#1   -122.23    37.88                 41         880            129        322        126        8.3252
+#2   -122.22    37.86                 21        7099           1106       2401       1138        8.3014
+#3   -122.24    37.85                 52        1467            190        496        177        7.2574
+#4   -122.25    37.85                 52        1274            235        558        219        5.6431
+#5   -122.25    37.85                 52        1627            280        565        259        3.8462
+#6   -122.25    37.85                 52         919            213        413        193        4.0368
+#median_house_value ocean_proximity_factor
+#1             452600               NEAR BAY
+#2             358500               NEAR BAY
+#3             352100               NEAR BAY
+#4             341300               NEAR BAY
+#5             342200               NEAR BAY
+#6             269700               NEAR BAY
+
+tail(housing)
+#      longitude latitude housing_median_age total_rooms total_bedrooms population households median_income
+#20635   -121.56    39.27                 28        2332            395       1041        344        3.7125
+#20636   -121.09    39.48                 25        1665            374        845        330        1.5603
+#20637   -121.21    39.49                 18         697            150        356        114        2.5568
+#20638   -121.22    39.43                 17        2254            485       1007        433        1.7000
+#20639   -121.32    39.43                 18        1860            409        741        349        1.8672
+#20640   -121.24    39.37                 16        2785            616       1387        530        2.3886
+#median_house_value ocean_proximity_factor
+#20635             116800                 INLAND
+#20636              78100                 INLAND
+#20637              77100                 INLAND
+#20638              92300                 INLAND
+#20639              84700                 INLAND
+#20640              89400                 INLAND
+
+#b)Run the summary()function on the data frame to get a sense for the  data classes, range of values for numeric
+#variables, and any NAs found.
+
+summary(housing)
+#   longitude         latitude     housing_median_age  total_rooms    total_bedrooms     population   
+#Min.   :-124.3   Min.   :32.54   Min.   : 1.00      Min.   :    2   Min.   :   1.0   Min.   :    3  
+#1st Qu.:-121.8   1st Qu.:33.93   1st Qu.:18.00      1st Qu.: 1448   1st Qu.: 296.0   1st Qu.:  787  
+#Median :-118.5   Median :34.26   Median :29.00      Median : 2127   Median : 435.0   Median : 1166  
+#Mean   :-119.6   Mean   :35.63   Mean   :28.64      Mean   : 2636   Mean   : 537.9   Mean   : 1425  
+#3rd Qu.:-118.0   3rd Qu.:37.71   3rd Qu.:37.00      3rd Qu.: 3148   3rd Qu.: 647.0   3rd Qu.: 1725  
+#Max.   :-114.3   Max.   :41.95   Max.   :52.00      Max.   :39320   Max.   :6445.0   Max.   :35682  
+#                                                                    NA's   :207                     
+#   households     median_income     median_house_value ocean_proximity_factor
+# Min.   :   1.0   Min.   : 0.4999   Min.   : 14999     <1H OCEAN :9136       
+# 1st Qu.: 280.0   1st Qu.: 2.5634   1st Qu.:119600     INLAND    :6551       
+# Median : 409.0   Median : 3.5348   Median :179700     ISLAND    :   5       
+# Mean   : 499.5   Mean   : 3.8707   Mean   :206856     NEAR BAY  :2290       
+# 3rd Qu.: 605.0   3rd Qu.: 4.7432   3rd Qu.:264725     NEAR OCEAN:2658       
+# Max.   :6082.0   Max.   :15.0001   Max.   :500001                        
+
+#c) Perform a correlation analysis on numeric variables in the data frame.
+
+cor(housing[sapply(housing, is.numeric)], use="complete.obs") #To avoid Error in cor : unused arguments. Source: https://stackoverflow.com/questions/3571909/calculate-correlation-with-cor-only-for-numerical-columns
+
+#                     longitude    latitude housing_median_age total_rooms total_bedrooms   population  households median_income median_house_value
+#longitude           1.00000000 -0.92461611        -0.10935655  0.04548017     0.06960802  0.100270301  0.05651277  -0.015550150        -0.04539822
+#latitude           -0.92461611  1.00000000         0.01189907 -0.03666681    -0.06698283 -0.108997344 -0.07177419  -0.079626319        -0.14463821
+#housing_median_age -0.10935655  0.01189907         1.00000000 -0.36062830    -0.32045104 -0.295787297 -0.30276797  -0.118277723         0.10643205
+#total_rooms         0.04548017 -0.03666681        -0.36062830  1.00000000     0.93037950  0.857281251  0.91899153   0.197881519         0.13329413
+#total_bedrooms      0.06960802 -0.06698283        -0.32045104  0.93037950     1.00000000  0.877746743  0.97972827  -0.007722850         0.04968618
+#population          0.10027030 -0.10899734        -0.29578730  0.85728125     0.87774674  1.000000000  0.90718590   0.005086624        -0.02529973
+#households          0.05651277 -0.07177419        -0.30276797  0.91899153     0.97972827  0.907185900  1.00000000   0.013433892         0.06489355
+#median_income      -0.01555015 -0.07962632        -0.11827772  0.19788152    -0.00772285  0.005086624  0.01343389   1.000000000         0.68835548
+#median_house_value -0.04539822 -0.14463821         0.10643205  0.13329413     0.04968618 -0.025299732  0.06489355   0.688355475         1.00000000
+
+#To make this table more readable, we created a plot:
+corrplot(cor(housing[sapply(housing, is.numeric)], use="complete.obs"))
+
+#d) Create histograms for each numeric variable.
+
+#Longitude variable
+hist(housing$longitude, freq=TRUE, col='darkgreen')
+
+#Latitude variable
+hist(housing$latitude, freq=TRUE, col='cyan')
+
+#Housing_median_age variable
+hist(housing$housing_median_age, freq=TRUE, col='pink')
+
+#total_rooms variable
+hist(housing$total_rooms, freq=TRUE, col='red')
+
+#total_bedrooms variable
+hist(housing$total_bedrooms, freq=TRUE, col='gray')
+
+#population variable
+hist(housing$population, freq=TRUE, col='darkorchid4')
+
+#households variable
+hist(housing$households, freq=TRUE, col='brown')
+
+#median_income variable
+hist(housing$median_income, freq=TRUE, col='orange')
+
+#median_house_value variable
+hist(housing$median_house_value, freq=TRUE, col='coral1')
+
+#e) Produce a bloxplot for the numeric variables in the data frame. [Hint: consider using the log argument for the y-axis to plot on the log scale]
+
+#For this question We will exclude Longitude and Latitude columns. To avoid error:#Error in plot.window(xlim = xlim, ylim = ylim, log = log, yaxs = pars$yaxs) : 
+#Logarithmic axis must have positive limits
+housing_boxplot = housing %>% select("housing_median_age", "total_rooms", "total_bedrooms", "population", "households", "median_income")
+
+boxplot(housing_boxplot,varwidth = TRUE,  log='y', las = 1, col='cadetblue3')
+
+#f)Produce boxplots for the variables: housing_median_age, median_income, and median_house_value "with respect" to the factor variable ocean_proximity. 
+
+#housing_median_age vs.ocean_proximity
+boxplot(housing$housing_median_age ~ housing$ocean_proximity_factor,
+        col=c('blue', 'orange'), 
+        varwidth = TRUE)
+
+#median_income vs. ocean_proximity
+boxplot(housing$median_income ~ housing$ocean_proximity_factor,
+        col=c('blue', 'pink'), 
+        varwidth = TRUE)
+
+#median_house_value vs. ocean_proximity
+boxplot(housing$median_house_value ~ housing$ocean_proximity_factor,
+        col=c('gray', 'red'), 
+        varwidth = TRUE)
+
+
+#Extract total_bedrooms columns to impute the NAs values
+#total_bedrooms <- housing$total_bedrooms
+#total_bedrooms
+
+#Extract total_bedrooms columns to impute the NAs values
+#total_bedrooms <- housing$total_bedrooms
+#total_bedrooms
+
+###3) Data Transformation 
+#The next step is to transform the raw data into a more refined form as indicated in the steps below:
+
+#a) Impute the missing data values replacing NAs total_bedrooms values with the Mean value
+housing$total_bedrooms[is.na(housing$total_bedrooms)] <- mean(housing$total_bedrooms, na.rm=TRUE)
+# Checking the change
+summary(housing)
+
+#b) Split the ocean_proximity variable into a number of binary categorical variables. Although many machine learning algorithms in R can handle
+#categorical data stored in a factor variable, but we will cater to the lowest common denominator and do the splitting ourselves. 
+#Once you're done with the splitting, you can remove the ocean_proximity variable from the data frame. 
+
+cat_data<- levels(housing$ocean_proximity_factor)
+cat_data
+
+binarycat <- function(c) {return(housing$ocean_proximity_factor == c)}
+binarycat('NEAR_BAY')
+
+newvars <- sapply(cat_data,binarycat)
+newvars
+
+class(newvars)
+
+bin_housing <- housing
+
+bin_housing$less1H_OCEAN <- newvars[,1]
+bin_housing$INLAND <- newvars[,2]
+bin_housing$ISLAND <- newvars[,3]
+bin_housing$NEAR_BAY <- newvars[,4]
+bin_housing$NEAR_OCEAN <- newvars[,5]
+
+head(bin_housing)
+#  longitude latitude housing_median_age total_rooms total_bedrooms population households median_income median_house_value
+#1   -122.23    37.88                 41         880            129        322        126        8.3252             452600
+#2   -122.22    37.86                 21        7099           1106       2401       1138        8.3014             358500
+#3   -122.24    37.85                 52        1467            190        496        177        7.2574             352100
+#4   -122.25    37.85                 52        1274            235        558        219        5.6431             341300
+#5   -122.25    37.85                 52        1627            280        565        259        3.8462             342200
+#6   -122.25    37.85                 52         919            213        413        193        4.0368             269700
+#ocean_proximity_factor less1H_OCEAN INLAND ISLAND NEAR_BAY NEAR_OCEAN
+#1               NEAR_BAY        FALSE  FALSE  FALSE     TRUE      FALSE
+#2               NEAR_BAY        FALSE  FALSE  FALSE     TRUE      FALSE
+#3               NEAR_BAY        FALSE  FALSE  FALSE     TRUE      FALSE
+#4               NEAR_BAY        FALSE  FALSE  FALSE     TRUE      FALSE
+#5               NEAR_BAY        FALSE  FALSE  FALSE     TRUE      FALSE
+#6               NEAR_BAY        FALSE  FALSE  FALSE     TRUE      FALSE
+
+names(bin_housing)
+
+#c)Use the total_bedrooms and total_rooms variables along with households to create two new variables:mean_number_bedrooms and mean_number_rooms
+#as these are likely to be more accurate depictions of the houses in a given group. You can then remove the total_bedrooms and total_rooms variables once you've accomplished this requirement.
+
+#Source: https://stackoverflow.com/questions/33981527/compute-the-mean-of-two-columns-in-a-dataframe
+bin_housing$mean_number_bedrooms <- rowMeans(bin_housing[,c('total_bedrooms', 'households')], na.rm=TRUE)
+bin_housing$mean_number_rooms <- rowMeans(bin_housing[,c('total_rooms', 'households')], na.rm=TRUE)
+
+#Checking changes
+names(bin_housing)
+# [1] "longitude"              "latitude"               "housing_median_age"     "total_rooms"            "total_bedrooms"        
+#[6] "population"             "households"             "median_income"          "median_house_value"     "ocean_proximity_factor"
+#[11] "less1H_OCEAN"           "INLAND"                 "ISLAND"                 "NEAR_BAY"               "NEAR_OCEAN"            
+#[16] "mean_number_bedrooms"   "mean_number_rooms"    
+
+#Removing total_bedrooms, total_rooms, and ocean_proximity_factor columns
+bin_housing <- subset( bin_housing, select = -total_bedrooms)
+bin_housing <- subset( bin_housing, select = -total_rooms)
+bin_housing <- subset( bin_housing, select = -ocean_proximity_factor)
+
+#Checking changes
+names(bin_housing)
+#[1] "longitude"              "latitude"               "housing_median_age"     "population"             "households"            
+#[6] "median_income"          "median_house_value"      "less1H_OCEAN"           "INLAND"                
+#[11] "ISLAND"                 "NEAR_BAY"               "NEAR_OCEAN"             "mean_number_bedrooms"   "mean_number_rooms" 
+head(bin_housing)
+
+#d)Perform feature scaling. Scale each numerical variable except for median_house_value(as this is our response variable).  
+
+#First, select numeric columns to use: 
+library(dplyr)
+
+num_columns = bin_housing %>% select(longitude, latitude, housing_median_age, population, households, median_income, mean_number_bedrooms, 
+                                      mean_number_rooms)
+#Checking current columns
+head(num_columns)
+#  longitude latitude housing_median_age population households median_income mean_number_bedrooms mean_number_rooms
+# 1   -122.23    37.88                 41        322        126        8.3252                127.5             503.0
+# 2   -122.22    37.86                 21       2401       1138        8.3014               1122.0            4118.5
+# 3   -122.24    37.85                 52        496        177        7.2574                183.5             822.0
+# 4   -122.25    37.85                 52        558        219        5.6431                227.0             746.5
+# 5   -122.25    37.85                 52        565        259        3.8462                269.5             943.0
+# 6   -122.25    37.85                 52        413        193        4.0368                203.0             556.0
+
+#Second, use scale() function
+bin_housingNormZ <-as.data.frame(scale(num_columns[1:8]))
+head(bin_housingNormZ) #checking new columns
+#  longitude latitude housing_median_age population households median_income mean_number_bedrooms mean_number_rooms
+#1 -1.327803 1.052523          0.9821189 -0.9744050 -0.9770092    2.34470896           -0.9822784        -0.8392042
+#2 -1.322812 1.043159         -0.6070042  0.8614180  1.6699206    2.33218146            1.5148154         2.0106891
+#3 -1.332794 1.038478          1.8561366 -0.8207575 -0.8436165    1.78265622           -0.8416678        -0.5877546
+#4 -1.337785 1.038478          1.8561366 -0.7660095 -0.7337637    0.93294491           -0.7324435        -0.6472670
+#5 -1.337785 1.038478          1.8561366 -0.7598283 -0.6291419   -0.01288068           -0.6257301        -0.4923772
+#6 -1.337785 1.038478          1.8561366 -0.8940491 -0.8017678    0.08744452           -0.7927051        -0.7974273
+
+#Third, Renaming the header of two columns : mean_number_bedrooms and mean_number_rooms
+names(bin_housingNormZ)[7] <- "mean_bedrooms"
+names(bin_housingNormZ)[8] <- "mean_rooms"
+
+head(bin_housingNormZ) #checking new columns
+#  longitude latitude housing_median_age population households median_income mean_bedrooms mean_rooms
+#1 -1.327803 1.052523          0.9821189 -0.9744050 -0.9770092    2.34470896    -0.9822784 -0.8392042
+#2 -1.322812 1.043159         -0.6070042  0.8614180  1.6699206    2.33218146     1.5148154  2.0106891
+#3 -1.332794 1.038478          1.8561366 -0.8207575 -0.8436165    1.78265622    -0.8416678 -0.5877546
+#4 -1.337785 1.038478          1.8561366 -0.7660095 -0.7337637    0.93294491    -0.7324435 -0.6472670
+#5 -1.337785 1.038478          1.8561366 -0.7598283 -0.6291419   -0.01288068    -0.6257301 -0.4923772
+#6 -1.337785 1.038478          1.8561366 -0.8940491 -0.8017678    0.08744452    -0.7927051 -0.7974273
+
+#Fourth, extracting factor variables from bin_housing data frame: "less1H_OCEAN", "INLAND", "ISLAND", "NEAR_BAY", "NEAR_OCEAN"
+#And renaming the header columns
+
+factor_var = bin_housing %>% select("NEAR_BAY", "less1H_OCEAN", "INLAND", "NEAR_OCEAN", "ISLAND")
+#Checking current columns
+head(factor_var)
+#NEAR_BAY less1H_OCEAN INLAND NEAR_OCEAN ISLAND
+#1     TRUE        FALSE  FALSE      FALSE  FALSE
+#2     TRUE        FALSE  FALSE      FALSE  FALSE
+#3     TRUE        FALSE  FALSE      FALSE  FALSE
+#4     TRUE        FALSE  FALSE      FALSE  FALSE
+#5     TRUE        FALSE  FALSE      FALSE  FALSE
+#6     TRUE        FALSE  FALSE      FALSE  FALSE
+
+#Renaming the header columns. 
+names(factor_var)[1] <- "NEAR BAY"
+names(factor_var)[2] <- "<1H OCEAN"
+names(factor_var)[4] <- "NEAR OCEAN"
+
+head(factor_var)
+#  NEAR BAY <1H OCEAN INLAND NEAR OCEAN ISLAND
+#1     TRUE     FALSE  FALSE      FALSE  FALSE
+#2     TRUE     FALSE  FALSE      FALSE  FALSE
+#3     TRUE     FALSE  FALSE      FALSE  FALSE
+#4     TRUE     FALSE  FALSE      FALSE  FALSE
+#5     TRUE     FALSE  FALSE      FALSE  FALSE
+#6     TRUE     FALSE  FALSE      FALSE  FALSE
+
+#Fifth, extracting from the data frame the Response variable: median_house_value (without scaling) 
+
+resp_var = bin_housing %>% select(median_house_value)
+head(resp_var)
+#  median_house_value
+#1             452600
+#2             358500
+#3             352100
+#4             341300
+#5             342200
+#6             269700
+
+
+#e) The result of your data transformation efforts should yield a new data frame named cleaned_housing
+
+cleaned_housing=cbind(factor_var, bin_housingNormZ, resp_var)
+head(cleaned_housing)
+#  NEAR BAY <1H OCEAN INLAND NEAR OCEAN ISLAND longitude latitude housing_median_age population households median_income mean_bedrooms mean_rooms
+#1     TRUE     FALSE  FALSE      FALSE  FALSE -1.327803 1.052523          0.9821189 -0.9744050 -0.9770092    2.34470896    -0.9822784 -0.8392042
+#2     TRUE     FALSE  FALSE      FALSE  FALSE -1.322812 1.043159         -0.6070042  0.8614180  1.6699206    2.33218146     1.5148154  2.0106891
+#3     TRUE     FALSE  FALSE      FALSE  FALSE -1.332794 1.038478          1.8561366 -0.8207575 -0.8436165    1.78265622    -0.8416678 -0.5877546
+#4     TRUE     FALSE  FALSE      FALSE  FALSE -1.337785 1.038478          1.8561366 -0.7660095 -0.7337637    0.93294491    -0.7324435 -0.6472670
+#5     TRUE     FALSE  FALSE      FALSE  FALSE -1.337785 1.038478          1.8561366 -0.7598283 -0.6291419   -0.01288068    -0.6257301 -0.4923772
+#6     TRUE     FALSE  FALSE      FALSE  FALSE -1.337785 1.038478          1.8561366 -0.8940491 -0.8017678    0.08744452    -0.7927051 -0.7974273
+#median_house_value
+#1             452600
+#2             358500
+#3             352100
+#4             341300
+#5             342200
+#6             269700
+
+###4) Create Training and Test Sets
+
+#a) Create a random sample index for the cleaned_housing data frame
+
+sindex <- sample(cleaned_housing)
+head(sample(sindex))
+#  longitude NEAR OCEAN housing_median_age latitude median_house_value households ISLAND median_income NEAR BAY population mean_bedrooms INLAND mean_rooms <1H OCEAN
+#1 -1.327803      FALSE          0.9821189 1.052523             452600 -0.9770092  FALSE    2.34470896     TRUE -0.9744050    -0.9822784  FALSE -0.8392042     FALSE
+#2 -1.322812      FALSE         -0.6070042 1.043159             358500  1.6699206  FALSE    2.33218146     TRUE  0.8614180     1.5148154  FALSE  2.0106891     FALSE
+#3 -1.332794      FALSE          1.8561366 1.038478             352100 -0.8436165  FALSE    1.78265622     TRUE -0.8207575    -0.8416678  FALSE -0.5877546     FALSE
+#4 -1.337785      FALSE          1.8561366 1.038478             341300 -0.7337637  FALSE    0.93294491     TRUE -0.7660095    -0.7324435  FALSE -0.6472670     FALSE
+#5 -1.337785      FALSE          1.8561366 1.038478             342200 -0.6291419  FALSE   -0.01288068     TRUE -0.7598283    -0.6257301  FALSE -0.4923772     FALSE
+#6 -1.337785      FALSE          1.8561366 1.038478             269700 -0.8017678  FALSE    0.08744452     TRUE -0.8940491    -0.7927051  FALSE -0.7974273     FALSE
+
+
+#b)Create a training set named train consisting of 70% of the rows of the cleaned_housing data frame.
+
+n <- nrow(cleaned_housing) #Number of observations 20640
+ntrain <- round(n*0.7) #70% for training set = 14448
+tindex <- sample(n, ntrain) # Create a training index
+head(tindex)
+#[1]  5075 13473  5916   628  8254  6206
+
+#training set
+train <- cleaned_housing[tindex,]
+head(train)
+dim(train)
+#      NEAR BAY <1H OCEAN INLAND NEAR OCEAN ISLAND  longitude   latitude housing_median_age  population  households median_income mean_bedrooms  mean_rooms median_house_value
+#5075     FALSE      TRUE  FALSE      FALSE  FALSE  0.6287420 -0.7733606          1.6972242 -0.29623661 -0.23419491    -1.0767700   -0.21770820 -0.29176931             106600
+#13473    FALSE     FALSE   TRUE      FALSE  FALSE  1.0929223 -0.7312248         -1.7988465 -0.45518233 -0.69453052     0.5465929   -0.76885156 -0.68786151             122400
+#5916     FALSE      TRUE  FALSE      FALSE  FALSE  0.5638565 -0.6329080          0.2670135 -0.74481674 -0.93254495    -1.1052990   -0.93959302 -0.97162906             138800
+#628       TRUE     FALSE  FALSE      FALSE  FALSE -1.3028471  0.9682512          0.5053819 -0.02426284  0.06659257    -0.2526927    0.05221395 -0.01903716             178900
+#8254     FALSE     FALSE  FALSE       TRUE  FALSE  0.6986186 -0.8716774          0.5848381  0.57531572  0.88525760    -0.8510646    0.85570314  0.25054201             181300
+#6206     FALSE      TRUE  FALSE      FALSE  FALSE  0.8433630 -0.7359066         -0.4480919  1.46187958  1.43190614     1.0815378    1.42316738  1.81323414             491200
+
+#Checking train set size
+revn1 <- nrow(train)
+revn1 # Checking train size = 14448 (70%)
+
+#c)Create a test set named test consisting of 30% of the rows of the cleaned_housing data frame. 
+
+test <- cleaned_housing[-tindex,]
+head(test)
+#   NEAR BAY <1H OCEAN INLAND NEAR OCEAN ISLAND longitude latitude housing_median_age population households median_income mean_bedrooms  mean_rooms median_house_value
+#1      TRUE     FALSE  FALSE      FALSE  FALSE -1.327803 1.052523          0.9821189 -0.9744050 -0.9770092     2.3447090    -0.9822784 -0.83920421             452600
+#3      TRUE     FALSE  FALSE      FALSE  FALSE -1.332794 1.038478          1.8561366 -0.8207575 -0.8436165     1.7826562    -0.8416678 -0.58775463             352100
+#4      TRUE     FALSE  FALSE      FALSE  FALSE -1.337785 1.038478          1.8561366 -0.7660095 -0.7337637     0.9329449    -0.7324435 -0.64726699             341300
+#8      TRUE     FALSE  FALSE      FALSE  FALSE -1.337785 1.033796          1.8561366 -0.2370735  0.3856888    -0.3951271     0.3723542  0.24265958             241400
+#11     TRUE     FALSE  FALSE      FALSE  FALSE -1.342777 1.038478          1.8561366 -0.4551823 -0.2551193    -0.3513861    -0.2528609 -0.20939789             281500
+#13     TRUE     FALSE  FALSE      FALSE  FALSE -1.342777 1.038478          1.8561366 -0.2891724 -0.0824934    -0.4188135    -0.1197830 -0.06948473             213500
+
+#Checking test set size
+revn2 <- nrow(test)
+revn2 # Checking test size = 6192 (30%)
+
+### 5) Supervised Machine Learning - Regression
+
+#a) Separate your training set train into two pieces: train_x and train_y where train_x is a data frame that has all variables except the response variable:
+#median_house_value and train_y is a numeric vector (not a data frame) that has only the response variable values from median_house_value.
+
+library(dplyr)
+train_x <- train[,-14]
+head(train_x)
+class(train_x)
+#[1] "data.frame"
+
+train_y <- train[ , "median_house_value"]# Subsetting column
+head(train_y)
+class(train_y)
+#[1] "numeric"
+
+#b) Call the randomForest()algorithm, passing to it both components of the training set created above. Make sure you specify arguments ntree=500, and importance=TRUE.
+
+#install.packages("randomForest")
+library(randomForest)
+
+rf = randomForest(x=train_x, y=train_y , ntree=500, importance=TRUE)
+names(rf)
+# [1] "call"    "type"     "predicted"       "mse"    "rsq"     "oob.times"    "importance"    "importanceSD"    "localImportance"
+#[10] "proximity"       "ntree"           "mtry"            "forest"          "coefs"    "y"       "test"            "inbag" 
+rf
+
+#Call:
+#        randomForest(x = train_x, y = train_y, ntree = 500, importance = TRUE) 
+#Type of random forest: regression
+#Number of trees: 500
+#No. of variables tried at each split: 4
+
+#Mean of squared residuals: 2478593538
+#% Var explained: 81.6
+
+###6) Evaluating Model Performance
+
+#a)Calculate the root mean squared error (RMSE) for the trained model. You can use the object element rf$mse for this purpose. This element is a vector of calculated 
+#square root of this value to obtain the RMSE.You can use the last MSE value, i.e. the last element of the vector.
+
+class(rf$mse)
+#numeric
+
+last_mse_value <- tail(rf$mse, n=1)# last item
+last_mse_value
+#[1] 2478593538 
+
+training_RMSE<- sqrt(last_mse_value)
+training_RMSE
+#[1] 49785.48
+
+#b) Split the test set in the same manner as the training set above, creating a new data frame test_x and numeric vector test_y.
+
+library(dplyr)
+test_x <- test[,-14]
+head(test_x)
+class(test_x)
+dim(test_x)
+#[1] "data.frame"
+
+test_y <- test[ , "median_house_value"]# Subsetting column
+class(test_y)
+#[1] "numeric"
+
+
+#You can use the predict() function using the trained model rf along with test_x in order to calculate a vector of predicted median house values.  
+
+y_predicted <- predict(rf, test_x)
+y_predicted
+class(y_predicted)
+
+
+#c) Calculate RMSE for test set
+
+test_RMSE <- rmse(y_predicted,test_y)
+test_RMSE
+#[1] 49610.58
+
+#d) How does the test set RMSE compare with the training set RMSE? 
+#Since the training RSME and test RSME are similar , this model does not have overfitting problem, it is a good model.
+#training_RMSE = 49785.48 vs. test_RMSE = 49610.58
+
+
+
+#e) Run the variable importance plot with the varImpPlot() function
+#By Variable importance plot, there are differences between the two graphs, especially for five variables: housing_median_age, longitude, inland, 
+#households, and mean_rooms. The top four most important variables help to explain the median_house_values variable. Among these four, the variable
+#housing_median_age was at the second level of importance; after the predictions, it dropped to the sixth position. That suggested to re-train the model. 
+
+varImpPlot(rf)
+
+
